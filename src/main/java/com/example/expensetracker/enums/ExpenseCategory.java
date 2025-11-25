@@ -1,4 +1,4 @@
-package enums;
+package com.example.expensetracker.enums;
 
 public enum ExpenseCategory {
     GROCERIES,

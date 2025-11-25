@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --bg-soft: #111827;
+            --card-bg: #1e293b;
+            --accent: #6366f1;
+            --accent-soft: rgba(99,102,241,0.12);
+            --accent-strong: #4f46e5;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2937;
+            --chip-bg: #0b1120;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top left, #1d4ed8 0, #0f172a 40%, #020617 100%);
+            color: var(--text-main);
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1080px;
+            margin: 24px;
+            background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(17,24,39,0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148,163,184,0.18);
+            box-shadow:
+                    0 24px 80px rgba(15,23,42,0.85),
+                    0 0 0 1px rgba(148,163,184,0.14);
+            padding: 24px 28px 28px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+            grid-gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .app-shell {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .app-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .app-header-left h1 {
+            font-size: 28px;
+            letter-spacing: 0.04em;
+            margin: 0 0 4px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.6);
+            border: 1px solid rgba(96,165,250,0.4);
+            color: #bfdbfe;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+        }
+
+        .pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
+        }
+
+        .small-muted {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Cards */
+        .card {
+            background: radial-gradient(circle at top left, rgba(79,70,229,0.22), rgba(15,23,42,0.9));
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.25);
+            padding: 18px 18px 16px;
+            box-shadow: 0 16px 40px rgba(15,23,42,0.8);
+        }
+
+        .card.soft {
+            background: var(--card-bg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 14px 0 6px;
+        }
+
+        /* Forms */
+        .field-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .field {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            width: 100%;
+            border-radius: 9px;
+            padding: 8px 10px;
+            border: 1px solid rgba(148,163,184,0.4);
+            background: rgba(15,23,42,0.9);
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: border 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        input::placeholder {
+            color: rgba(148,163,184,0.7);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.5);
+            background: rgba(15,23,42,1);
+        }
+
+        button {
+            border-radius: 999px;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 10px 25px rgba(79,70,229,0.55);
+            transition: background 0.16s ease, transform 0.1s ease, box-shadow 0.16s ease;
+        }
+
+        button:hover {
+            background: var(--accent-strong);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(79,70,229,0.6);
+        }
+
+        button.secondary {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid rgba(148,163,184,0.5);
+            box-shadow: none;
+        }
+
+        button.secondary:hover {
+            background: rgba(15,23,42,0.9);
+        }
+
+        button.chip {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            color: var(--text-muted);
+            border: 1px solid rgba(55,65,81,0.8);
+            box-shadow: none;
+        }
+
+        button.chip.active {
+            background: var(--accent-soft);
+            color: #e5e7eb;
+            border-color: rgba(129,140,248,0.9);
+        }
+
+        /* Status + badges */
+        #auth-status {
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .status-ok {
+            color: var(--success);
+        }
+
+        .status-error {
+            color: var(--danger);
+        }
+
+        .tiny-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.4);
+            color: var(--text-muted);
+        }
+
+        /* Expenses table */
+        .table-wrapper {
+            margin-top: 12px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(148,163,184,0.3);
+            background: rgba(15,23,42,0.9);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: rgba(15,23,42,0.98);
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(31,41,55,0.9);
+        }
+
+        th {
+            text-align: left;
+            font-weight: 500;
+            color: rgba(209,213,219,0.9);
+            font-size: 12px;
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(15,23,42,0.93);
+        }
+
+        tbody tr:hover {
+            background: rgba(30,64,175,0.21);
+        }
+
+        .amount-cell {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+
+        .category-pill {
+            display: inline-flex;
+            padding: 2px 8px;
+            font-size: 11px;
+            border-radius: 999px;
+            background: rgba(55,65,81,0.8);
+            color: #e5e7eb;
+            text-transform: capitalize;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .total-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .total-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .total-chip {
+            padding: 4px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(34,197,94,0.5);
+            background: rgba(22,163,74,0.14);
+            color: #bbf7d0;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 18px 10px 20px;
+        }
+
+        .small-btn {
+            font-size: 11px;
+            padding: 4px 9px;
+            box-shadow: none;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(148,163,184,0.5), transparent);
+            margin: 10px 0 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- HEADER -->
+    <div class="app-header">
+        <div class="app-header-left">
+            <div class="pill">
+                <span class="pill-dot"></span>
+                EXPENSE TRACKER API
+            </div>
+            <h1>Expense Tracker</h1>
+            <div class="small-muted">Track your spending, filter by period, and stay on top of your money.</div>
+        </div>
+        <div class="app-header-right">
+            <div class="tiny-badge" id="user-chip" style="display:none;">Logged in</div>
+        </div>
+    </div>
+
+    <!-- AUTH CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Get started</div>
+                <div class="card-subtitle">Create an account or log in to manage your expenses.</div>
+            </div>
+        </div>
+
+        <div id="auth">
+            <div class="section-title">Sign up</div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="su-name">Full name</label>
+                    <input id="su-name" placeholder="e.g. Shivam Jaiswal">
+                </div>
+                <div class="field">
+                    <label for="su-email">Email</label>
+                    <input id="su-email" placeholder="you@example.com">
+                </div>
+                <div class="field">
+                    <label for="su-pass">Password</label>
+                    <input id="su-pass" type="password" placeholder="••••••••">
+                </div>
+            </div>
+            <button onclick="signup()">Create account</button>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Login</div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="li-email">Email</label>
+                    <input id="li-email" placeholder="you@example.com">
+                </div>
+                <div class="field">
+                    <label for="li-pass">Password</label>
+                    <input id="li-pass" type="password" placeholder="••••••••">
+                </div>
+                <div class="field" style="flex:0 0 auto; display:flex; align-items:flex-end;">
+                    <button onclick="login()">Login</button>
+                </div>
+            </div>
+
+            <p id="auth-status"></p>
+        </div>
+    </div>
+
+    <!-- MAIN APP CARD -->
+    <div class="card soft" id="app" style="display:none;">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Your expenses</div>
+                <div class="card-subtitle">Add, filter and manage your recent expenses.</div>
+            </div>
+            <button class="secondary small-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="section-title">Add expense</div>
+        <div class="field-row">
+            <div class="field">
+                <label for="amount">Amount</label>
+                <input id="amount" type="number" step="0.01" placeholder="0.00">
+            </div>
+            <div class="field">
+                <label for="date">Date</label>
+                <input id="date" type="date">
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="description">Description</label>
+                <input id="description" placeholder="Groceries at supermarket">
+            </div>
+            <div class="field">
+                <label for="category">Category</label>
+                <select id="category">
+                    <option>GROCERIES</option>
+                    <option>LEISURE</option>
+                    <option>ELECTRONICS</option>
+                    <option>UTILITIES</option>
+                    <option>CLOTHING</option>
+                    <option>HEALTH</option>
+                    <option>OTHERS</option>
+                </select>
+            </div>
+            <div class="field" style="flex:0 0 auto; display:flex; align-items:flex-end;">
+                <button onclick="addExpense()">Add</button>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="toolbar">
+            <div class="filter-group">
+                <span class="small-muted">Quick filters:</span>
+                <button class="chip" id="chip-week" onclick="loadExpensesWithChip('week')">Past week</button>
+                <button class="chip" id="chip-month" onclick="loadExpensesWithChip('month')">Past month</button>
+                <button class="chip" id="chip-three" onclick="loadExpensesWithChip('three_months')">Last 3 months</button>
+            </div>
+            <div class="filter-group">
+                <span class="small-muted">Custom:</span>
+                <input id="startDate" type="date" style="max-width: 130px;">
+                <input id="endDate" type="date" style="max-width: 130px;">
+                <button class="secondary small-btn" onclick="loadCustom()">Apply</button>
+            </div>
+        </div>
+
+        <div class="toolbar" style="margin-top: 10px;">
+            <div class="filter-group">
+                <span class="small-muted">Current filter:</span>
+                <span class="tiny-badge" id="current-filter">All time</span>
+            </div>
+            <div class="filter-group">
+                <span class="total-label">Total:</span>
+                <span class="total-chip" id="total-amount">₹0.00</span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="expenses-table">
+                <thead>
+                <tr>
+                    <th style="width: 20%;">Date</th>
+                    <th style="width: 15%;">Amount</th>
+                    <th style="width: 18%;">Category</th>
+                    <th>Description</th>
+                    <th style="width: 14%;">Actions</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="empty-state" id="empty-state" style="display:none;">
+                No expenses found for this period. Add your first expense above.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api';  // same origin
+    let token = null;
+    let activeChip = null;
+
+    function setLoggedIn(t) {
+        token = t;
+        if (token) {
+            localStorage.setItem('jwt', token);
+            document.getElementById('auth-status').innerText = 'Logged in successfully.';
+            document.getElementById('auth-status').className = 'status-ok';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('user-chip').style.display = 'inline-flex';
+            loadExpenses();
+        }
+    }
+
+    function setError(msg) {
+        const el = document.getElementById('auth-status');
+        el.innerText = msg;
+        el.className = 'status-error';
+    }
+
+    function clearChips() {
+        ['chip-week','chip-month','chip-three'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+        });
+    }
+
+    function setCurrentFilter(label) {
+        document.getElementById('current-filter').innerText = label;
+    }
+
+    function updateTotal(expenses) {
+        if (!Array.isArray(expenses) || expenses.length === 0) {
+            document.getElementById('total-amount').innerText = '₹0.00';
+            return;
+        }
+        const total = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+        document.getElementById('total-amount').innerText =
+            '₹' + total.toFixed(2);
+    }
+
+    async function signup() {
+        setError('');
+        const body = {
+            fullName: document.getElementById('su-name').value,
+            email: document.getElementById('su-email').value,
+            password: document.getElementById('su-pass').value
+        };
+        try {
+            const res = await fetch(API_BASE + '/auth/signup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setLoggedIn(data.token);
+            } else {
+                setError('Signup failed: ' + (data.message || res.status));
+            }
+        } catch (e) {
+            setError('Signup failed: network error');
+        }
+    }
+
+    async function login() {
+        setError('');
+        const body = {
+            email: document.getElementById('li-email').value,
+            password: document.getElementById('li-pass').value
+        };
+        try {
+            const res = await fetch(API_BASE + '/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setLoggedIn(data.token);
+            } else {
+                setError('Login failed: ' + (data.message || res.status));
+            }
+        } catch (e) {
+            setError('Login failed: network error');
+        }
+    }
+
+    async function addExpense() {
+        if (!token) {
+            setError('You must be logged in to add expenses.');
+            return;
+        }
+        const body = {
+            amount: parseFloat(document.getElementById('amount').value || '0'),
+            date: document.getElementById('date').value,
+            description: document.getElementById('description').value,
+            category: document.getElementById('category').value
+        };
+        try {
+            const res = await fetch(API_BASE + '/expenses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(body)
+            });
+            if (res.ok) {
+                document.getElementById('amount').value = '';
+                document.getElementById('description').value = '';
+                loadExpenses();
+            } else {
+                alert('Failed to add expense');
+            }
+        } catch (e) {
+            alert('Failed to add expense (network error)');
+        }
+    }
+
+    async function loadExpenses(period) {
+        if (!token) return;
+        let url = API_BASE + '/expenses';
+        if (period) {
+            url += '?period=' + period;
+        }
+        try {
+            const res = await fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            renderExpenses(data);
+            if (!period) {
+                setCurrentFilter('All time');
+                clearChips();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function loadExpensesWithChip(period) {
+        clearChips();
+        if (period === 'week') document.getElementById('chip-week').classList.add('active');
+        if (period === 'month') document.getElementById('chip-month').classList.add('active');
+        if (period === 'three_months') document.getElementById('chip-three').classList.add('active');
+
+        if (period === 'week') setCurrentFilter('Past week');
+        else if (period === 'month') setCurrentFilter('Past month');
+        else if (period === 'three_months') setCurrentFilter('Last 3 months');
+
+        loadExpenses(period);
+    }
+
+    async function loadCustom() {
+        if (!token) return;
+        clearChips();
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        let url = API_BASE + '/expenses?';
+        if (start) url += 'startDate=' + start + '&';
+        if (end) url += 'endDate=' + end;
+
+        setCurrentFilter('Custom range');
+
+        try {
+            const res = await fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            renderExpenses(data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderExpenses(data) {
+        const tbody = document.querySelector('#expenses-table tbody');
+        const empty = document.getElementById('empty-state');
+        tbody.innerHTML = '';
+        if (!data || data.length === 0) {
+            empty.style.display = 'block';
+            updateTotal([]);
+            return;
+        }
+        empty.style.display = 'none';
+        data.forEach(exp => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${exp.date}</td>
+                <td class="amount-cell">₹${(exp.amount || 0).toFixed ? exp.amount.toFixed(2) : exp.amount}</td>
+                <td><span class="category-pill">${exp.category}</span></td>
+                <td>${exp.description || ''}</td>
+                <td><button class="secondary small-btn" onclick="deleteExpense(${exp.id})">Delete</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        updateTotal(data);
+    }
+
+    async function deleteExpense(id) {
+        if (!token) return;
+        if (!confirm('Delete this expense?')) return;
+        try {
+            const res = await fetch(API_BASE + '/expenses/' + id, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                loadExpenses();
+            } else {
+                alert('Failed to delete expense');
+            }
+        } catch (e) {
+            alert('Failed to delete expense (network error)');
+        }
+    }
+
+    function logout() {
+        token = null;
+        localStorage.removeItem('jwt');
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('user-chip').style.display = 'none';
+        setError('Logged out.');
+    }
+
+    // Try auto-login from localStorage
+    (function init() {
+        const stored = localStorage.getItem('jwt');
+        if (stored) {
+            token = stored;
+            document.getElementById('user-chip').style.display = 'inline-flex';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('auth-status').innerText = 'Session restored.';
+            document.getElementById('auth-status').className = 'status-ok';
+            loadExpenses();
+        }
+    })();
+</script>
+</body>
+</html>

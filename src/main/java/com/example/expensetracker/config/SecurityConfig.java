@@ -1,6 +1,5 @@
-package config;
+package com.example.expensetracker.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.*;
@@ -26,11 +25,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf->csrf.disable())
-                .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth->auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated())
+        http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ public endpoints
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/static/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico",
+                                "/api/auth/**"
+                        ).permitAll()
+                        // ✅ everything else needs JWT
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

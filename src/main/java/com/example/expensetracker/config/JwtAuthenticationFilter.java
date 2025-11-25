@@ -1,4 +1,4 @@
-package config;
+package com.example.expensetracker.config;
 
 
 import jakarta.servlet.*;
@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import service.CustomUserDetailsService;
+import com.example.expensetracker.service.CustomUserDetailsService;
 
 import java.io.IOException;
 
@@ -38,8 +38,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             token = header.substring(7);
-            // validateToken should not throw unchecked exceptions for normal invalid tokens;
-            // if it can throw, you may wrap and handle specific exceptions here.
             if (jwtService.validateToken(token)) {
                 username = jwtService.extractUsername(token);
             }
