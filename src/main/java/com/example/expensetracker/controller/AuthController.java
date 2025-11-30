@@ -34,6 +34,7 @@ public class AuthController {
     public AuthResponse signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         User user = userService.registerUser(signUpRequest);
         String token = jwtService.generateToken(user.getEmail());
+        System.out.println(token);
         return new AuthResponse(token);
     }
 

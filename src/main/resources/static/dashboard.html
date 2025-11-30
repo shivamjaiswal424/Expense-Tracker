@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Tracker - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 4px;
+        }
+
+        #subtitle {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            width: 900px;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0px 6px 20px rgba(0,0,0,0.07);
+            margin-bottom: 24px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        input, select {
+            padding: 9px;
+            margin: 6px 0 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 150px;
+        }
+
+        input[type="date"] {
+            width: 160px;
+        }
+
+        #description {
+            width: 250px;
+        }
+
+        #category {
+            width: 180px;
+        }
+
+        button {
+            padding: 9px 14px;
+            background: #2563eb;
+            border: none;
+            color: white;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #1e4fcf;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 18px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            color: #333;
+        }
+
+        #top-bar {
+            width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #logout-btn {
+            background: #e11d48;
+        }
+
+        #logout-btn:hover {
+            background: #be123c;
+        }
+    </style>
+</head>
+<body>
+<div id="top-bar">
+    <div>
+        <h1>Expense Tracker</h1>
+        <div id="subtitle">Add, filter and manage your expenses.</div>
+    </div>
+    <button id="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="card">
+    <h2>Add Expense</h2>
+
+    <label>Amount</label><br>
+    <input id="amount" type="number" step="0.01">
+
+    <label style="margin-left:20px;">Date</label>
+    <input id="date" type="date">
+
+    <br>
+
+    <label>Description</label><br>
+    <input id="description" placeholder="Description">
+
+    <label style="margin-left:20px;">Category</label>
+    <select id="category">
+        <option>GROCERIES</option>
+        <option>LEISURE</option>
+        <option>ELECTRONICS</option>
+        <option>UTILITIES</option>
+        <option>CLOTHING</option>
+        <option>HEALTH</option>
+        <option>OTHERS</option>
+    </select>
+
+    <button onclick="addExpense()" style="margin-left:20px;">Add</button>
+</div>
+
+<div class="card">
+    <h2>Filters</h2>
+    <div id="filters">
+        <button onclick="loadExpenses('week')">Past week</button>
+        <button onclick="loadExpenses('month')">Past month</button>
+        <button onclick="loadExpenses('three_months')">Last 3 months</button>
+    </div>
+
+    <div style="margin-top:10px;">
+        <label>Custom range</label><br/>
+        <input id="startDate" type="date">
+        <input id="endDate" type="date" style="margin-left:10px;">
+        <button onclick="loadCustom()" style="margin-left:10px;">Apply</button>
+    </div>
+
+    <h2 style="margin-top:24px;">Your Expenses</h2>
+    <table id="expenses-table">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const API_BASE = '/api';
+    let token = localStorage.getItem('jwt');
+
+    if (!token) {
+        // not logged in, go back to login
+        window.location.href = '/';
+    }
+
+    function logout() {
+        localStorage.removeItem('jwt');
+        window.location.href = '/';
+    }
+
+    async function addExpense() {
+        const body = {
+            amount: parseFloat(document.getElementById('amount').value),
+            date: document.getElementById('date').value,
+            description: document.getElementById('description').value,
+            // IMPORTANT: match backend DTO: expenseCategory
+            expenseCategory: document.getElementById('category').value
+        };
+
+        const res = await fetch(API_BASE + '/expenses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+            loadExpenses();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alert('Failed to add expense: ' + (data.message || res.status));
+        }
+    }
+
+    async function loadExpenses(period) {
+        let url = API_BASE + '/expenses';
+        if (period) url += '?period=' + period;
+
+        const res = await fetch(url, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        const tbody = document.querySelector('#expenses-table tbody');
+        tbody.innerHTML = '';
+
+        data.forEach(exp => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${exp.date}</td>
+                <td>${exp.amount}</td>
+                <td>${exp.category || exp.expenseCategory}</td>
+                <td>${exp.description || ''}</td>
+                <td><button onclick="deleteExpense(${exp.id})">Delete</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadCustom() {
+        let url = API_BASE + '/expenses?';
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (start) url += 'startDate=' + start + '&';
+        if (end) url += 'endDate=' + end;
+
+        const res = await fetch(url, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        const tbody = document.querySelector('#expenses-table tbody');
+        tbody.innerHTML = '';
+
+        data.forEach(exp => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${exp.date}</td>
+                <td>${exp.amount}</td>
+                <td>${exp.category || exp.expenseCategory}</td>
+                <td>${exp.description || ''}</td>
+                <td><button onclick="deleteExpense(${exp.id})">Delete</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function deleteExpense(id) {
+        const res = await fetch(API_BASE + '/expenses/' + id, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+            loadExpenses();
+        } else {
+            alert('Failed to delete expense');
+        }
+    }
+
+    // initial load
+    loadExpenses();
+</script>
+</body>
+</html>

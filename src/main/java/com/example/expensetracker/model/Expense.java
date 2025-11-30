@@ -1,10 +1,8 @@
 package com.example.expensetracker.model;
 
 import com.example.expensetracker.enums.ExpenseCategory;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -25,13 +23,15 @@ public class Expense {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private ExpenseCategory category;
+    @Column(name = "expense_category")
+    private ExpenseCategory expenseCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
-    // ---- getters & setters ----
+    // --- getters and setters ---
     public Long getId() {
         return id;
     }
@@ -60,19 +60,19 @@ public class Expense {
         this.description = description;
     }
 
-    public ExpenseCategory getCategory() {
-        return category;
+    public ExpenseCategory getExpenseCategory() {
+        return expenseCategory;
     }
 
-    public void setCategory(ExpenseCategory category) {
-        this.category = category;
+    public void setExpenseCategory(ExpenseCategory expenseCategory) {
+        this.expenseCategory = expenseCategory;
     }
 
-    public User getUser() {          // <--- needed
+    public User getUser() {
         return user;
     }
 
-    public void setUser(User user) { // <--- needed
+    public void setUser(User user) {
         this.user = user;
     }
 }

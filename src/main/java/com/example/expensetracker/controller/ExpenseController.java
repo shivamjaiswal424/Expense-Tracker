@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/expense")
+@RequestMapping("/api/expenses")
 @CrossOrigin(origins="*")
 public class ExpenseController {
     public final ExpenseService expenseService;
